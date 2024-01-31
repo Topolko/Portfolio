@@ -1,4 +1,4 @@
-import {Suspense, useState} from 'react'
+import {Suspense, useState, useEffect, useRef} from 'react'
 import {Canvas} from '@react-three/fiber'
 import Loader from '../Components/Loader'
 
@@ -8,11 +8,27 @@ import Plane from '../Models/Plane'
 import { Island } from '../Models/island'
 import HomeInfo from '../Components/HomeInfo'
 
+import sakura from '../Assets/sakura.mp3'
+import { soundoff, soundon } from '../Assets/icons'
+
 
 const Home = () => {
-
+  const audioRef = useRef(new Audio(sakura));
+  audioRef.current.volume = 0.4;
+  audioRef.current.loop = true;
   const [isRotating, setIsRotating] = useState(false);
   const [currentStage, setCurrentStage] = useState(1); 
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+
+  useEffect(() => {
+    if(isPlayingMusic) {
+      audioRef.current.play();
+    }
+
+    return ()=>{
+      audioRef.current.pause();
+    }
+  }, [isPlayingMusic])
 
 const adjusIslandForScreenSize = () => {
   let screenScale = null;
@@ -44,7 +60,7 @@ const adjusPlaneForScreenSize = () => {
 }
 
   const [islandScale, islandPosition, islandRotation] = adjusIslandForScreenSize();
-  const [planeScale, planeSize] = adjusPlaneForScreenSize();
+  const [planeScale, planePosition] = adjusPlaneForScreenSize();
 
   return (
     <section className='w-full h-screen relative'>
@@ -74,11 +90,18 @@ const adjusPlaneForScreenSize = () => {
         />
         <Plane 
           isRotating = {isRotating}
-          planeScale = {planeScale}
-          planeSize ={planeSize}
+          scale = {planeScale}
+          position ={planePosition}
           rotation={[0, 20, 0]}/>
       </Suspense>
       </Canvas>
+      <div className='absolute bottom-2 left-2'>
+        <img 
+        src={!isPlayingMusic? soundoff : soundon}
+        alt='sound'
+        className='w-10 h-10 cursor-pointer object-contain'
+        onClick={() => setIsPlayingMusic(!isPlayingMusic)}/>
+      </div>
     </section>
   )
 }
